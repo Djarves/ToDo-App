@@ -1,0 +1,1 @@
+{"mappings":"AAAA,MAAM,QAAQ,IAAI,UAAU;AAC5B,MAAM,OAAO,IAAI;AACjB,MAAM,aAAa,IAAI,eAAe,OAAO","sources":["src/app.js"],"sourcesContent":["const model = new TaskModel('todo.tasks.v1');\r\nconst view = new TaskView();\r\nconst controller = new TaskController(model, view);\r\n"],"names":[],"version":3,"file":"ToDos.816e7b21.js.map","sourceRoot":"/__parcel_source_root/"}
