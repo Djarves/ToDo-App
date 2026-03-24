@@ -1,67 +1,106 @@
-// controller.js
-class TaskController {
+export class TaskController {
   constructor(model, view) {
-    this.model = model;
-    this.view = view;
-    this.currentFilter = 'all';
+    this.model = model; // модель (работа с Firebase)
+    this.view = view;   // отображение
+    this.currentFilter = 'all'; // текущий фильтр
 
+    // получаем элементы со страницы
     this.taskForm = document.getElementById('task-form');
     this.taskInput = document.getElementById('task-input');
     this.prioritySelect = document.getElementById('priority-select');
     this.filterButtons = document.querySelectorAll('.filter-btn');
 
-    this.bindEvents();
-    this.render();
+    this.bindEvents();  // вешаем события
+    this.init();        // 🔥 вместо render — делаем async инициализацию
+  }
+
+  // 🔥 загружаем задачи при старте
+  async init() {
+    await this.render();
   }
 
   bindEvents() {
-    this.taskForm.addEventListener('submit', (e) => {
+    // отправка формы (добавление задачи)
+    this.taskForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const text = this.taskInput.value;
       const priority = this.prioritySelect.value;
+
       if(!text.trim()) return;
-      this.model.addTask(text, priority);
+
+      // 🔥 ждём пока задача добавится в Firebase
+      await this.model.addTask(text, priority);
+
+      // очищаем поля
       this.taskInput.value = '';
       this.prioritySelect.value = 'normal';
-      this.render();
+
+      // перерисовываем список
+      await this.render();
     });
 
-    this.filterButtons.forEach(btn => btn.addEventListener('click', () => {
+    // кнопки фильтра
+    this.filterButtons.forEach(btn => btn.addEventListener('click', async () => {
       this.filterButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+
       this.currentFilter = btn.dataset.filter;
-      this.render();
+
+      await this.render();
     }));
   }
 
-  render() {
-    const tasks = this.model.getTasks(this.currentFilter);
-    this.view.render(tasks, 
-      (id) => this.handleEdit(id), 
-      (id) => this.handleRemove(id), 
+  // 🔥 теперь render асинхронный
+  async render() {
+    // получаем задачи из Firebase
+    const tasks = await this.model.getTasks(this.currentFilter);
+
+    // передаём в view
+    this.view.render(
+      tasks,
+      (id) => this.handleEdit(id),
+      (id) => this.handleRemove(id),
       (id, done) => this.handleToggle(id, done)
     );
   }
 
-  handleEdit(id) {
+  // редактирование
+  async handleEdit(id) {
     const t = this.model.tasks.find(x => x.id === id);
     if(!t) return;
+
     const newText = prompt('Измените текст задачи:', t.text);
     if(newText === null) return;
-    const newPriority = prompt('Приоритет: пусто для обычного, "important" для важной:', t.priority);
-    this.model.updateTask(id, {text: newText.trim() || t.text, priority: (newPriority && newPriority.trim()) ? newPriority.trim() : t.priority});
-    this.render();
+
+    const newPriority = prompt(
+      'Приоритет: пусто для обычного, "important" для важной:',
+      t.priority
+    );
+
+    // обновляем в Firebase
+    await this.model.updateTask(id, {
+      text: newText.trim() || t.text,
+      priority: (newPriority && newPriority.trim())
+        ? newPriority.trim()
+        : t.priority
+    });
+
+    await this.render();
   }
 
-  handleRemove(id) {
+  // удаление
+  async handleRemove(id) {
     if(confirm('Удалить задачу?')) {
-      this.model.removeTask(id);
-      this.render();
+      await this.model.removeTask(id);
+      await this.render();
     }
   }
 
-  handleToggle(id, done) {
-    this.model.updateTask(id, {done});
-    this.render();
+  // переключение done
+  async handleToggle(id, done) {
+    await this.model.updateTask(id, { done });
+    await this.render();
   }
 }
+

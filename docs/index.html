@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="ru"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Персональная ToDo Лист</title>
+    <link rel="stylesheet" href="/ToDos.2cdaf7bc.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Персональная ToDo Лист</h1>
+        </header>
+
+        <form id="task-form" autocomplete="off">
+            <input id="task-input" type="text" placeholder="Добавьте новую задачу..." required="">
+            <select id="priority-select">
+                <option value="normal">Обычная</option>
+                <option value="important">Важная</option>
+            </select>
+            <button type="submit">Добавить</button>
+        </form>
+
+        <div class="filters">
+            <button data-filter="all" class="filter-btn active">Все</button>
+            <button data-filter="active" class="filter-btn">Не выполнено</button>
+            <button data-filter="completed" class="filter-btn">Выполнено</button>
+        </div>
+
+        <ul id="task-list" class="task-list"></ul>
+    </div>
+   
+    <script type="module" src="/ToDos.0f77c784.js"></script>
+
+</body></html>

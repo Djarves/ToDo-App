@@ -1,5 +1,78 @@
-// model.js
-class TaskModel {
+// импорт базы
+import { db } from './firebase.js';
+
+// импорт функций Firebase
+import {
+  collection,   // коллекция (как массив)
+  addDoc,       // добавить
+  getDocs,      // получить
+  deleteDoc,    // удалить
+  doc,          // ссылка на документ
+  updateDoc     // обновить
+} from "firebase/firestore";
+
+// загрузка задач из Firebase
+export async function loadTasks() {
+  try {
+    // получаем все документы из коллекции "tasks"
+    const querySnapshot = await getDocs(collection(db, "tasks"));
+
+    // преобразуем в массив
+    const tasks = [];
+
+    querySnapshot.forEach((docItem) => {
+      tasks.push({
+        id: docItem.id,        // id документа из Firebase
+        ...docItem.data()      // все данные (text, done и т.д.)
+      });
+    });
+
+    return tasks;
+
+  } catch (e) {
+    console.error("Ошибка загрузки:", e);
+    return [];
+  }
+}
+
+export async function addTask(text, priority) {
+  try {
+    await addDoc(collection(db, "tasks"), {
+      text: text.trim(),        // текст задачи
+      done: false,              // выполнена или нет
+      priority: priority || 'normal'
+    });
+
+    console.log("Задача добавлена");
+
+  } catch (e) {
+    console.error("Ошибка добавления:", e);
+  }
+}
+
+export async function removeTask(id) {
+  try {
+    await deleteDoc(doc(db, "tasks", id));
+    console.log("Удалено");
+  } catch (e) {
+    console.error("Ошибка удаления:", e);
+  }
+}
+
+export async function updateTask(id, patch) {
+  try {
+    const taskRef = doc(db, "tasks", id);
+
+    await updateDoc(taskRef, patch);
+
+    console.log("Обновлено");
+  } catch (e) {
+    console.error("Ошибка обновления:", e);
+  }
+}
+
+
+export class TaskModel {
   constructor(storageKey) {
     this.STORAGE_KEY = storageKey;
     this.tasks = this.loadTasks();
@@ -47,3 +120,4 @@ class TaskModel {
     });
   }
 }
+

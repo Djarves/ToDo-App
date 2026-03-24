@@ -1,5 +1,5 @@
 // view.js
-class TaskView {
+export class TaskView {
   constructor() {
     this.taskList = document.getElementById('task-list');
   }
